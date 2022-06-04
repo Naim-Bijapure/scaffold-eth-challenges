@@ -2,9 +2,9 @@ pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract DiceGame {
-
     uint256 public nonce = 0;
     uint256 public prize = 0;
 
@@ -21,19 +21,28 @@ contract DiceGame {
 
     function rollTheDice() public payable {
         require(msg.value >= 0.002 ether, "Failed to send enough value");
+        // console.log("block.number: ", block.number);
 
         bytes32 prevHash = blockhash(block.number - 1);
-        bytes32 hash = keccak256(abi.encodePacked(prevHash, address(this), nonce));
+        // console.log("prevHash: ", Strings.toHexString(uint256(prevHash), 32));
+        // console.log("nonce: ", nonce);
+        bytes32 hash = keccak256(
+            abi.encodePacked(prevHash, address(this), nonce)
+        );
+
+        // console.log("Generated hash", Strings.toHexString(uint256(hash), 32));
+
+        // console.log("uint256(hash): ", uint256(hash));
         uint256 roll = uint256(hash) % 16;
 
-        console.log("THE ROLL IS ",roll);
+        // console.log("THE ROLL IS ", roll);
 
         nonce++;
         prize += ((msg.value * 40) / 100);
 
         emit Roll(msg.sender, roll);
 
-        if (roll > 2 ) {
+        if (roll > 3) {
             return;
         }
 
@@ -45,5 +54,5 @@ contract DiceGame {
         emit Winner(msg.sender, amount);
     }
 
-    receive() external payable {  }
+    receive() external payable {}
 }
